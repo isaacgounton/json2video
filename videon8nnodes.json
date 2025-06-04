@@ -1,0 +1,60 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Transform input data for JSON2Video API\ntry {\n  const input = $input.item.json;\n  const videos = input.Videos || [];\n  const audioUrl = input.audio_url || input.speech_url || '';\n  const videoId = input.ID || '';\n\n  // Build timeline from video URLs\n  const timeline = [];\n  const videoDuration = 5.0; // Duration for each video clip\n\n  videos.forEach((video, index) => {\n    if (video && video.output) {\n      timeline.push({\n        \"type\": \"video\",\n        \"url\": video.output,\n        \"duration\": videoDuration,\n        \"effects\": {\n          \"zoom\": 1.0 // No zoom by default\n        }\n      });\n    }\n  });\n\n  // If no videos, add a default placeholder\n  if (timeline.length === 0) {\n    timeline.push({\n      \"type\": \"image\",\n      \"url\": \"https://via.placeholder.com/1080x1920/000000/FFFFFF?text=No+Videos\",\n      \"duration\": 3.0\n    });\n  }\n\n  // Build JSON2Video render request\n  const renderRequest = {\n    \"timeline\": timeline,\n    \"transition\": {\n      \"type\": \"crossfade\",\n      \"duration\": 0.5\n    }\n  };\n\n  // Add audio if available\n  if (audioUrl) {\n    renderRequest.audio = audioUrl;\n  }\n\n  return [{\n    json: {\n      renderRequest,\n      videoId,\n      originalInput: input\n    }\n  }];\n\n} catch (error) {\n  return [{\n    json: {\n      error: true,\n      message: `Error transforming input: ${error.message}`,\n      renderRequest: {\n        \"timeline\": [{\n          \"type\": \"image\",\n          \"url\": \"https://via.placeholder.com/1080x1920/FF0000/FFFFFF?text=Error\",\n          \"duration\": 3.0\n        }]\n      }\n    }\n  }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        400
+      ],
+      "id": "22fd640c-fa6e-4294-b443-51f01b2845db",
+      "name": "Transform Input"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://json2video.dahopevi.com/render",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.renderRequest }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        400
+      ],
+      "id": "6d20f959-66f5-48d7-9e84-d9e10b5878aa",
+      "name": "JSON2Video Render",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "EisVOlSwiEHimEsq",
+          "name": "Json2Video Daho"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Transform Input": {
+      "main": [
+        [
+          {
+            "node": "JSON2Video Render",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "a328d5870890b1de9c157562c3d6adbde0f1891acff46b62a31fafe6d04b3436"
+  }
+}

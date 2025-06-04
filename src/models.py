@@ -127,10 +127,17 @@ class TextOverlay(BaseModel):
     position: Optional[str] = "center"
     fontsize: Optional[int] = 32
     color: Optional[str] = "white"
+    bg_color: Optional[str] = None  # Background color for text
+    stroke_color: Optional[str] = None  # Stroke/outline color
+    stroke_width: Optional[int] = None  # Stroke width
+    font: Optional[str] = None  # Custom font path
 
     def compile(self, base_clip: ImageClip) -> ImageClip:
+        # Use custom font if provided, otherwise default
+        font_path = self.font or "fonts/Impact.ttf"
+        
         txt = TextClip(
-            font="fonts/Impact.ttf",
+            font=font_path,
             text=self.text,
             font_size=self.fontsize,
             color=self.color,
@@ -138,6 +145,29 @@ class TextOverlay(BaseModel):
             method="caption",
             size=(base_clip.w, base_clip.h),
         )
+
+        # Add stroke/outline if specified
+        if self.stroke_color and self.stroke_width:
+            stroke_w = self.stroke_width or 0
+            txt = txt.with_effects([
+                lambda clip: clip.on_color(
+                    size=(clip.w + stroke_w * 2, clip.h + stroke_w * 2),
+                    color=self.stroke_color,
+                    pos="center"
+                )
+            ])
+
+        # Add background color if specified
+        if self.bg_color:
+            # Create a colored background slightly larger than the text
+            padding = 20  # pixels of padding around text
+            txt = txt.with_effects([
+                lambda clip: clip.on_color(
+                    size=(clip.w + padding * 2, clip.h + padding),
+                    color=self.bg_color,
+                    pos="center"
+                )
+            ])
 
         return txt.with_start(self.start).with_duration(
             (self.end - self.start) if self.end else base_clip.duration

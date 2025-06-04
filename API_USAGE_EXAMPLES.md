@@ -112,7 +112,10 @@ curl -X POST "https://your-domain.com/render" \
         "end": 3.5,
         "position": "center",
         "fontsize": 48,
-        "color": "white"
+        "color": "white",
+        "bg_color": "#000000",
+        "stroke_color": "#FF0000",
+        "stroke_width": 2
       },
       {
         "text": "Video Clip Section", 
@@ -120,7 +123,8 @@ curl -X POST "https://your-domain.com/render" \
         "end": 9.0,
         "position": "center",
         "fontsize": 36,
-        "color": "cyan"
+        "color": "white",
+        "bg_color": "#1E90FF"
       },
       {
         "text": "Split Screen Demo", 
@@ -128,7 +132,8 @@ curl -X POST "https://your-domain.com/render" \
         "end": 12.5,
         "position": "center",
         "fontsize": 36,
-        "color": "yellow"
+        "color": "black",
+        "bg_color": "#FFD700"
       }
     ]
   }'
@@ -178,6 +183,7 @@ payload = {
             "end": 3.0,
             "fontsize": 42,
             "color": "white",
+            "bg_color": "#333333",
             "position": "center"
         },
         {
@@ -185,7 +191,10 @@ payload = {
             "start": 3.0,
             "end": 7.0,
             "fontsize": 36,
-            "color": "cyan",
+            "color": "white",
+            "bg_color": "#FF6B35",
+            "stroke_color": "#000000",
+            "stroke_width": 1,
             "position": "center"
         }
     ],
@@ -402,11 +411,15 @@ fetch('https://your-domain.com/combine', {
 ```json
 {
   "text": "Your text here",
-  "start": 1.0,         // Start time in seconds
-  "end": 4.0,           // End time in seconds (optional)
-  "position": "center", // Text position
-  "fontsize": 32,       // Font size in pixels
-  "color": "white"      // Text color
+  "start": 1.0,              // Start time in seconds
+  "end": 4.0,                // End time in seconds (optional)
+  "position": "center",      // Text position
+  "fontsize": 32,            // Font size in pixels
+  "color": "white",          // Text color
+  "bg_color": "#000000",     // Background color (optional)
+  "stroke_color": "#FF0000", // Stroke/outline color (optional)
+  "stroke_width": 2,         // Stroke width in pixels (optional)
+  "font": "fonts/Arial.ttf" // Custom font path (optional)
 }
 ```
 
