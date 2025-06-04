@@ -4,6 +4,9 @@ from typing import Optional
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
+    # API Security
+    api_key: Optional[str] = None
+    
     # Legacy GCP bucket name (for backward compatibility)
     bucket_name: Optional[str] = None
     

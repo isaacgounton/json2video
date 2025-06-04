@@ -3,7 +3,7 @@ import shutil
 import uuid
 import logging
 
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Header
 from fastapi.responses import FileResponse
 from moviepy import VideoFileClip, AudioFileClip
 from starlette.background import BackgroundTask
@@ -20,9 +20,23 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+# API Key Authentication
+def verify_api_key(x_api_key: str = Header(..., description="API Key")):
+    """Verify the API key from the X-API-Key header"""
+    if not settings.api_key:
+        # If no API key is configured, skip authentication
+        return True
+    
+    if x_api_key != settings.api_key:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid API key"
+        )
+    return True
+
 
 @app.post("/render")
-def render_video(payload: VideoRequest):
+def render_video(payload: VideoRequest, _: bool = Depends(verify_api_key)):
     tmp_file = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
     output_path = tmp_file.name
     
@@ -57,6 +71,7 @@ os.makedirs(TMP_DIR, exist_ok=True)
 async def combine_endpoint(
     video: UploadFile = File(..., description="Video file (.webm)"),
     audio: UploadFile = File(..., description="Audio file (.webm)"),
+    _: bool = Depends(verify_api_key)
 ):
     # Generate unique filenames
     vid_id = uuid.uuid4().hex

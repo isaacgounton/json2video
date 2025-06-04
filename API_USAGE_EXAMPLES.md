@@ -7,6 +7,22 @@ This API allows you to create videos from JSON configurations and combine video/
 https://your-domain.com
 ```
 
+## Authentication
+
+This API uses API key authentication via the `X-API-Key` header. You must include your API key in all requests.
+
+**Required Header:**
+```
+X-API-Key: your_api_key_here
+```
+
+**Setting up your API key:**
+1. Set the `API_KEY` environment variable in your `.env` file
+2. If no API key is configured, authentication is disabled (for development only)
+
+**Authentication Errors:**
+- `401 Unauthorized`: Invalid or missing API key
+
 ## Endpoints
 
 ### 1. `/render` - Create Video from JSON Configuration
@@ -21,6 +37,7 @@ This endpoint creates a video based on a JSON configuration that defines images,
 ```bash
 curl -X POST "https://your-domain.com/render" \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
   -d '{
     "timeline": [
       {
@@ -42,6 +59,7 @@ curl -X POST "https://your-domain.com/render" \
 ```bash
 curl -X POST "https://your-domain.com/render" \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
   -d '{
     "timeline": [
       {
@@ -138,7 +156,10 @@ payload = {
 
 response = requests.post(
     "https://your-domain.com/render",
-    headers={"Content-Type": "application/json"},
+    headers={
+        "Content-Type": "application/json",
+        "X-API-Key": "your_api_key_here"
+    },
     json=payload
 )
 
@@ -185,7 +206,11 @@ const videoConfig = {
   ]
 };
 
-axios.post('https://your-domain.com/render', videoConfig)
+axios.post('https://your-domain.com/render', videoConfig, {
+  headers: {
+    'X-API-Key': 'your_api_key_here'
+  }
+})
   .then(response => {
     console.log('Video URL:', response.data.url);
   })
@@ -205,6 +230,7 @@ This endpoint combines separate video and audio files into a single video file.
 
 ```bash
 curl -X POST "https://your-domain.com/combine" \
+  -H "X-API-Key: your_api_key_here" \
   -F "video=@video_file.webm" \
   -F "audio=@audio_file.webm"
 ```
@@ -222,6 +248,7 @@ files = {
 
 response = requests.post(
     "https://your-domain.com/combine",
+    headers={"X-API-Key": "your_api_key_here"},
     files=files
 )
 
@@ -251,6 +278,9 @@ formData.append('audio', audioFile);
 
 fetch('https://your-domain.com/combine', {
   method: 'POST',
+  headers: {
+    'X-API-Key': 'your_api_key_here'
+  },
   body: formData
 })
 .then(response => {
