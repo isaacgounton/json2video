@@ -54,7 +54,7 @@ curl -X POST "https://your-domain.com/render" \
   }'
 ```
 
-#### Advanced Example - With Effects, Text Overlays, and Audio
+#### Advanced Example - With Images, Videos, Effects, Text Overlays, and Audio
 
 ```bash
 curl -X POST "https://your-domain.com/render" \
@@ -72,6 +72,16 @@ curl -X POST "https://your-domain.com/render" \
         }
       },
       {
+        "type": "video",
+        "url": "https://example.com/clip1.mp4",
+        "duration": 5.0,
+        "start_time": 2.0,
+        "end_time": 7.0,
+        "effects": {
+          "zoom": 1.1
+        }
+      },
+      {
         "type": "split",
         "top_url": "https://example.com/top_image.jpg", 
         "bot_url": "https://example.com/bottom_image.jpg",
@@ -81,9 +91,13 @@ curl -X POST "https://your-domain.com/render" \
         }
       },
       {
-        "type": "image",
-        "url": "https://example.com/finale.jpg",
-        "duration": 2.0
+        "type": "video",
+        "url": "https://example.com/outro.mp4",
+        "duration": 3.0,
+        "start_time": 0.0,
+        "effects": {
+          "rotate": -2.0
+        }
       }
     ],
     "audio": "https://example.com/background_music.mp3",
@@ -101,9 +115,17 @@ curl -X POST "https://your-domain.com/render" \
         "color": "white"
       },
       {
-        "text": "Split Screen Demo", 
+        "text": "Video Clip Section", 
         "start": 4.0,
-        "end": 6.5,
+        "end": 9.0,
+        "position": "center",
+        "fontsize": 36,
+        "color": "cyan"
+      },
+      {
+        "text": "Split Screen Demo", 
+        "start": 9.5,
+        "end": 12.5,
         "position": "center",
         "fontsize": 36,
         "color": "yellow"
@@ -112,13 +134,13 @@ curl -X POST "https://your-domain.com/render" \
   }'
 ```
 
-#### Python Example
+#### Python Example - Mixed Images and Videos
 
 ```python
 import requests
 import json
 
-# Basic video creation
+# Mixed content video creation with images and video clips
 payload = {
     "timeline": [
         {
@@ -130,21 +152,40 @@ payload = {
             }
         },
         {
+            "type": "video",
+            "url": "https://example.com/sample_video.mp4",
+            "duration": 4.0,
+            "start_time": 5.0,
+            "end_time": 9.0,
+            "effects": {
+                "rotate": 2.0
+            }
+        },
+        {
             "type": "image", 
             "url": "https://picsum.photos/800/600?random=2",
             "duration": 2.5,
             "effects": {
-                "rotate": -2.0
+                "slidein": 1.0
             }
         }
     ],
+    "audio": "https://example.com/background_music.mp3",
     "text_overlays": [
         {
-            "text": "Sample Video Creation",
+            "text": "Mixed Media Creation",
             "start": 0.0,
-            "end": 5.5,
+            "end": 3.0,
             "fontsize": 42,
             "color": "white",
+            "position": "center"
+        },
+        {
+            "text": "Video Clip Segment",
+            "start": 3.0,
+            "end": 7.0,
+            "fontsize": 36,
+            "color": "cyan",
             "position": "center"
         }
     ],
@@ -321,6 +362,21 @@ fetch('https://your-domain.com/combine', {
 }
 ```
 
+#### Video Item
+```json
+{
+  "type": "video",
+  "url": "https://example.com/video.mp4",
+  "duration": 5.0,
+  "start_time": 10.0,   // Start time to extract from video (optional)
+  "end_time": 15.0,     // End time to extract from video (optional)
+  "effects": {
+    "zoom": 1.1,        // Scale factor (1.0 = no zoom)
+    "rotate": 5.0       // Rotation in degrees
+  }
+}
+```
+
 #### Split Screen Item
 ```json
 {
@@ -372,12 +428,17 @@ fetch('https://your-domain.com/combine', {
 
 ## Tips and Best Practices
 
-1. **Image URLs**: Ensure all image URLs are publicly accessible
-2. **Audio Files**: Supported formats include MP3, WAV, AAC
-3. **Duration**: Plan your timeline durations to match your audio length
-4. **Effects**: Use effects sparingly for better performance
-5. **Text Overlays**: Keep text concise and ensure good contrast
-6. **File Sizes**: Larger images may take longer to process
+1. **Media URLs**: Ensure all image and video URLs are publicly accessible
+2. **Supported Formats**: 
+   - **Images**: JPG, PNG, GIF, WebP
+   - **Videos**: MP4, AVI, MOV, WebM, MKV
+   - **Audio**: MP3, WAV, AAC, M4A
+3. **Video Clips**: Use `start_time` and `end_time` to extract specific segments from longer videos
+4. **Duration**: Plan your timeline durations to match your audio length
+5. **Effects**: Use effects sparingly for better performance
+6. **Text Overlays**: Keep text concise and ensure good contrast with background
+7. **File Sizes**: Larger files may take longer to process - consider optimizing videos before upload
+8. **Mixed Content**: You can freely mix images, videos, and split-screen items in the same timeline
 
 ## Error Handling
 

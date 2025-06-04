@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from enum import Enum
 
-from moviepy import ImageClip, clips_array, TextClip
+from moviepy import ImageClip, VideoFileClip, clips_array, TextClip
 from pydantic import BaseModel, HttpUrl, Field
 from typing import List, Optional, Union, Literal, override
 
@@ -27,7 +27,7 @@ class Effects(BaseModel):
 
 
 class ClipBase(BaseModel):
-    type: Literal["image", "split"]
+    type: Literal["image", "split", "video"]
     duration: float
     effects: Optional[Effects] = None
 
@@ -93,7 +93,31 @@ class SplitItem(ClipBase):
         return clip
 
 
-ClipItem = ImageItem | SplitItem
+class VideoItem(ClipBase):
+    type: Literal["video"] = "video"
+    url: HttpUrl
+    start_time: Optional[float] = 0.0  # Start time to extract from video
+    end_time: Optional[float] = None   # End time to extract from video
+
+    @override
+    def compile(self) -> VideoFileClip:
+        video_path = download_file(self.url)
+        clip = VideoFileClip(video_path)
+        
+        # Extract subclip if start_time or end_time specified
+        if self.end_time is not None:
+            clip = clip.subclipped(self.start_time, self.end_time)
+        elif self.start_time and self.start_time > 0:
+            clip = clip.subclipped(self.start_time, self.start_time + self.duration)
+        
+        # Set duration if specified
+        clip = clip.with_duration(self.duration)
+        
+        if self.effects:
+            clip = self.apply_effects(clip, self.effects)
+        return clip
+
+ClipItem = ImageItem | SplitItem | VideoItem
 
 
 class TextOverlay(BaseModel):
