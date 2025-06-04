@@ -1,6 +1,7 @@
 import os
 import shutil
 import uuid
+import logging
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
@@ -10,8 +11,12 @@ from starlette.background import BackgroundTask
 from settings import settings
 from src.models import VideoRequest, VideoResponse
 from src.video_renderer import create_video
-from google.cloud import storage
+from src.cloud_storage import upload_file
 import tempfile
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -20,18 +25,28 @@ app = FastAPI()
 def render_video(payload: VideoRequest):
     tmp_file = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
     output_path = tmp_file.name
-    filename = f"{uuid.uuid4().hex}.mp4"
+    
     try:
+        logger.info(f"Creating video for request: {payload}")
         create_video(payload, output_path)
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(settings.bucket_name)
-        blob = bucket.blob(filename)
-        blob.upload_from_filename(output_path)
-        return VideoResponse(url=blob.public_url)
+        
+        logger.info(f"Uploading video to cloud storage: {output_path}")
+        url = upload_file(output_path)
+        
+        logger.info(f"Video uploaded successfully: {url}")
+        return VideoResponse(url=url)
+        
     except Exception as e:
+        logger.error(f"Error processing video request: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        pass  # You can schedule cleanup later
+        # Cleanup temporary file
+        try:
+            if os.path.exists(output_path):
+                os.remove(output_path)
+                logger.info(f"Cleaned up temporary file: {output_path}")
+        except OSError as e:
+            logger.warning(f"Failed to cleanup temporary file {output_path}: {e}")
 
 
 TMP_DIR = "tmp_combiner"
